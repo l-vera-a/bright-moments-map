@@ -1,12 +1,10 @@
 'use strict';
 
-// ─── DATA ───────────────────────────────────────────────────────────────────
+// ─── DATA ─────────────────────────────────────────────────────────────────────
 
 const MOMENTS = [
   {
-    id: 1,
-    title: 'Момент свободы',
-    number: 'I',
+    id: 1, number: 'I', title: 'Момент свободы',
     text: [
       'Пусть в твоей жизни всегда будет место для дороги, которую ты выбираешь сама.',
       'Не потому что «так надо». Не потому что «так правильно».',
@@ -14,9 +12,7 @@ const MOMENTS = [
     ]
   },
   {
-    id: 2,
-    title: 'Момент лёгкости',
-    number: 'II',
+    id: 2, number: 'II', title: 'Момент лёгкости',
     text: [
       'Пусть сложное иногда оказывается проще, чем казалось.',
       'Пусть нужные двери открываются без драматического скрипа.',
@@ -24,43 +20,33 @@ const MOMENTS = [
     ]
   },
   {
-    id: 3,
-    title: 'Момент красоты',
-    number: 'III',
+    id: 3, number: 'III', title: 'Момент красоты',
     text: [
       'Пусть вокруг будет больше красивого: в местах, людях, словах, случайных утрах, отражениях в окнах и планах, которые вдруг начинают сбываться.'
     ]
   },
   {
-    id: 4,
-    title: 'Момент силы',
-    number: 'IV',
+    id: 4, number: 'IV', title: 'Момент силы',
     text: [
       'Пусть твоя сила будет не только про «выдержать».',
       'Пусть она будет ещё и про выбирать, останавливаться, уходить от лишнего и беречь себя без чувства вины.'
     ]
   },
   {
-    id: 5,
-    title: 'Момент тепла',
-    number: 'V',
+    id: 5, number: 'V', title: 'Момент тепла',
     text: [
       'Пусть рядом будут люди, с которыми можно не играть роль, не объяснять очевидное и не держать лицо, когда хочется просто быть живой.'
     ]
   },
   {
-    id: 6,
-    title: 'Момент «я смогла»',
-    number: 'VI',
+    id: 6, number: 'VI', title: 'Момент «я смогла»',
     text: [
       'Пусть впереди будет много тихих побед. Не обязательно громких. Не обязательно для всех.',
       'Просто таких, после которых внутри становится спокойнее и увереннее.'
     ]
   },
   {
-    id: 7,
-    title: 'Момент нового маршрута',
-    number: 'VII',
+    id: 7, number: 'VII', title: 'Момент нового маршрута',
     text: [
       'Пусть каждый новый поворот ведёт не к хаосу, а к себе.',
       'К новым желаниям. К новым местам.',
@@ -68,9 +54,7 @@ const MOMENTS = [
     ]
   },
   {
-    id: 8,
-    title: 'Момент, который останется',
-    number: 'VIII',
+    id: 8, number: 'VIII', title: 'Момент, который останется',
     text: [
       'Пусть в жизни будет больше мгновений, которые не нужно записывать, чтобы помнить.',
       'Они просто остаются — запахом, светом, фразой, человеком, дорогой.'
@@ -78,446 +62,346 @@ const MOMENTS = [
   }
 ];
 
-const FINAL_MOMENT = {
-  title: 'Юля',
-  number: '✦',
-  text: [
-    'Самая важная точка на этой карте — не место, не дата и не событие.',
-    'Это ты.',
-    'Потому что именно ты превращаешь дорогу в путь, случайности — в историю, а обычные дни — в то, что потом называется жизнью.'
-  ]
-};
+// ─── GEMINI CONSTELLATION ────────────────────────────────────────────────────
+// 8 stars mapped to Gemini: 2 heads, 2 upper, 2 mid, 2 feet
+// Offsets from screen center in "units" (scaled at runtime)
 
-// ─── STATE ───────────────────────────────────────────────────────────────────
-
-const openedPoints = new Set(JSON.parse(localStorage.getItem('bm_opened') || '[]'));
-let userMoments = JSON.parse(localStorage.getItem('bm_user_moments') || '[]');
-let finalUnlocked = openedPoints.size >= 8;
-
-// ─── SVG POINT COORDINATES ───────────────────────────────────────────────────
-// Map is 800×700 viewBox
-
-const POINT_COORDS = [
-  { id: 1, cx: 110, cy: 580 },
-  { id: 2, cx: 190, cy: 480 },
-  { id: 3, cx: 160, cy: 380 },
-  { id: 4, cx: 260, cy: 300 },
-  { id: 5, cx: 370, cy: 240 },
-  { id: 6, cx: 490, cy: 210 },
-  { id: 7, cx: 590, cy: 160 },
-  { id: 8, cx: 680, cy: 110 }
+const GEMINI_OFFSETS = [
+  [-1.0, -1.5],  // 0  Pollux  (left head)
+  [+1.0, -1.5],  // 1  Castor  (right head)
+  [-1.2, -0.62], // 2  left upper body
+  [+1.2, -0.62], // 3  right upper body
+  [-1.38, +0.28],// 4  left mid
+  [+1.38, +0.28],// 5  right mid
+  [-1.5,  +1.18],// 6  left foot
+  [+1.5,  +1.18],// 7  right foot
 ];
 
-const FINAL_COORDS = { cx: 720, cy: 70 };
+// Which indices connect with lines
+const GEMINI_LINES = [
+  [0, 2], [2, 4], [4, 6],   // left twin body
+  [1, 3], [3, 5], [5, 7],   // right twin body
+  [2, 3], [4, 5],            // crossbars
+];
 
-// SVG route path through all points + final
-const ROUTE_DARK_D = `M 80,640 C 95,610 100,595 110,580`;
-const ROUTE_LIGHT_D = `M 110,580 C 140,545 170,510 190,480
-  C 210,450 175,410 160,380
-  C 145,350 210,325 260,300
-  C 310,275 340,258 370,240
-  C 400,222 445,215 490,210
-  C 535,205 560,182 590,160
-  C 620,138 650,124 680,110
-  C 695,102 708,87 720,70`;
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
-// ─── BUILD SVG ───────────────────────────────────────────────────────────────
+const HALF = 16;       // half of star div (32px hitbox)
+const PAD  = 72;       // minimum distance from edges for star movement
+const BG_COUNT = 210;  // number of background canvas stars
 
-function buildSVG() {
-  const svg = document.getElementById('route-svg');
-  if (!svg) return;
+// ─── STATE ────────────────────────────────────────────────────────────────────
 
-  const NS = 'http://www.w3.org/2000/svg';
+let gameState = 'intro'; // 'intro' | 'playing' | 'paused' | 'assembling' | 'done'
+let wishIndex = 0;
+let activationTimer = null;
+let rafId = null;
 
-  // Defs
-  const defs = document.createElementNS(NS, 'defs');
-  defs.innerHTML = `
-    <radialGradient id="bgGrad" cx="60%" cy="30%" r="70%">
-      <stop offset="0%"   stop-color="#1a1040" stop-opacity="0.5"/>
-      <stop offset="60%"  stop-color="#07080f" stop-opacity="0.8"/>
-      <stop offset="100%" stop-color="#050608" stop-opacity="1"/>
-    </radialGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <filter id="glowStrong" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
-      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <filter id="glowRose" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
-      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-  `;
-  svg.appendChild(defs);
+// ─── CANVAS BACKGROUND ────────────────────────────────────────────────────────
 
-  // Background
-  const bgRect = document.createElementNS(NS, 'rect');
-  bgRect.setAttribute('width', '800');
-  bgRect.setAttribute('height', '700');
-  bgRect.setAttribute('fill', 'url(#bgGrad)');
-  svg.appendChild(bgRect);
+let canvas, ctx;
+const bgStars = [];
 
-  // Star field
-  const starsG = document.createElementNS(NS, 'g');
-  starsG.setAttribute('aria-hidden', 'true');
-  const rng = (() => { let s = 42; return () => { s = (s * 1664525 + 1013904223) & 0x7fffffff; return s / 0x7fffffff; }; })();
-  for (let i = 0; i < 140; i++) {
-    const star = document.createElementNS(NS, 'circle');
-    star.setAttribute('cx', String(rng() * 800));
-    star.setAttribute('cy', String(rng() * 700));
-    star.setAttribute('r', String(0.3 + rng() * 1.1));
-    star.setAttribute('fill', 'white');
-    star.setAttribute('opacity', String((0.08 + rng() * 0.45).toFixed(2)));
-    starsG.appendChild(star);
+function initCanvas() {
+  canvas = document.getElementById('starfield');
+  ctx    = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
   }
-  svg.appendChild(starsG);
+  resize();
+  window.addEventListener('resize', resize);
 
-  // Subtle grid (navigation reference lines)
-  const gridG = document.createElementNS(NS, 'g');
-  gridG.setAttribute('aria-hidden', 'true');
-  gridG.setAttribute('opacity', '0.07');
-  for (let i = 0; i < 10; i++) {
-    const h = document.createElementNS(NS, 'line');
-    h.setAttribute('x1', '0'); h.setAttribute('y1', String(70 * i));
-    h.setAttribute('x2', '800'); h.setAttribute('y2', String(70 * i));
-    h.setAttribute('stroke', '#a090d0'); h.setAttribute('stroke-width', '0.5');
-    gridG.appendChild(h);
-    const v = document.createElementNS(NS, 'line');
-    v.setAttribute('x1', String(80 * i)); v.setAttribute('y1', '0');
-    v.setAttribute('x2', String(80 * i)); v.setAttribute('y2', '700');
-    v.setAttribute('stroke', '#a090d0'); v.setAttribute('stroke-width', '0.5');
-    gridG.appendChild(v);
+  // Seeded pseudo-random (consistent star layout per session)
+  let s = 0xdeadbeef;
+  function rnd() {
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+    return ((s ^ (s >>> 16)) >>> 0) / 0xffffffff;
   }
-  svg.appendChild(gridG);
 
-  // Zone labels
-  const labelDark = document.createElementNS(NS, 'text');
-  labelDark.setAttribute('x', '30'); labelDark.setAttribute('y', '630');
-  labelDark.setAttribute('class', 'zone-label');
-  labelDark.textContent = 'Тёмный участок';
-  svg.appendChild(labelDark);
-
-  const labelLight = document.createElementNS(NS, 'text');
-  labelLight.setAttribute('x', '600'); labelLight.setAttribute('y', '48');
-  labelLight.setAttribute('class', 'zone-label');
-  labelLight.textContent = 'Светлый участок';
-  svg.appendChild(labelLight);
-
-  // Route - dark segment
-  const routeDark = document.createElementNS(NS, 'path');
-  routeDark.setAttribute('d', ROUTE_DARK_D);
-  routeDark.setAttribute('class', 'route-dark');
-  svg.appendChild(routeDark);
-
-  // Route - light segment
-  const routeLight = document.createElementNS(NS, 'path');
-  routeLight.setAttribute('id', 'route-light');
-  routeLight.setAttribute('d', ROUTE_LIGHT_D);
-  routeLight.setAttribute('class', 'route-light');
-  svg.appendChild(routeLight);
-
-  // Regular points
-  POINT_COORDS.forEach((pt) => {
-    const g = document.createElementNS(NS, 'g');
-    g.setAttribute('class', `map-point${openedPoints.has(pt.id) ? ' opened' : ''}`);
-    g.setAttribute('data-id', String(pt.id));
-    g.setAttribute('tabindex', '0');
-    g.setAttribute('role', 'button');
-    g.setAttribute('aria-label', MOMENTS[pt.id - 1].title);
-
-    const outer = document.createElementNS(NS, 'circle');
-    outer.setAttribute('cx', String(pt.cx)); outer.setAttribute('cy', String(pt.cy));
-    outer.setAttribute('r', '12'); outer.setAttribute('class', 'point-outer');
-
-    const inner = document.createElementNS(NS, 'circle');
-    inner.setAttribute('cx', String(pt.cx)); inner.setAttribute('cy', String(pt.cy));
-    inner.setAttribute('r', '5'); inner.setAttribute('class', 'point-inner');
-
-    const label = document.createElementNS(NS, 'text');
-    label.setAttribute('x', String(pt.cx));
-    label.setAttribute('y', String(pt.cy + 22));
-    label.setAttribute('text-anchor', 'middle');
-    label.setAttribute('class', 'point-label');
-    label.textContent = MOMENTS[pt.id - 1].number;
-
-    g.appendChild(outer);
-    g.appendChild(inner);
-    g.appendChild(label);
-    svg.appendChild(g);
-
-    g.addEventListener('click', () => openCard(pt.id));
-    g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') openCard(pt.id); });
-  });
-
-  // Final point
-  const fg = document.createElementNS(NS, 'g');
-  fg.setAttribute('id', 'final-point');
-  fg.setAttribute('class', `final-point${finalUnlocked ? ' visible' : ''}`);
-  fg.setAttribute('tabindex', finalUnlocked ? '0' : '-1');
-  fg.setAttribute('role', 'button');
-  fg.setAttribute('aria-label', 'Юля — финальная точка');
-
-  const fo = document.createElementNS(NS, 'circle');
-  fo.setAttribute('cx', String(FINAL_COORDS.cx)); fo.setAttribute('cy', String(FINAL_COORDS.cy));
-  fo.setAttribute('r', '16'); fo.setAttribute('class', 'final-point-outer');
-
-  const fi = document.createElementNS(NS, 'circle');
-  fi.setAttribute('cx', String(FINAL_COORDS.cx)); fi.setAttribute('cy', String(FINAL_COORDS.cy));
-  fi.setAttribute('r', '6'); fi.setAttribute('class', 'final-point-inner');
-  fi.setAttribute('filter', 'url(#glowRose)');
-
-  const fl = document.createElementNS(NS, 'text');
-  fl.setAttribute('x', String(FINAL_COORDS.cx));
-  fl.setAttribute('y', String(FINAL_COORDS.cy + 26));
-  fl.setAttribute('text-anchor', 'middle');
-  fl.setAttribute('class', 'final-point-label');
-  fl.textContent = 'Юля';
-
-  fg.appendChild(fo); fg.appendChild(fi); fg.appendChild(fl);
-  svg.appendChild(fg);
-
-  fg.addEventListener('click', () => { if (finalUnlocked) openFinalCard(); });
-  fg.addEventListener('keydown', (e) => {
-    if ((e.key === 'Enter' || e.key === ' ') && finalUnlocked) openFinalCard();
-  });
-
-  // Restore user moments
-  userMoments.forEach((m) => addUserPointToSVG(m.text, m.cx, m.cy));
-
-  updateStatus();
+  for (let i = 0; i < BG_COUNT; i++) {
+    bgStars.push({
+      x:       rnd() * window.innerWidth,
+      y:       rnd() * window.innerHeight,
+      r:       0.3  + rnd() * 1.1,
+      opacity: 0.07 + rnd() * 0.52,
+      speed:   0.01 + rnd() * 0.055,
+    });
+  }
 }
 
-// ─── CARD LOGIC ──────────────────────────────────────────────────────────────
+// ─── GAME STARS ───────────────────────────────────────────────────────────────
 
-function openCard(id) {
-  const moment = MOMENTS[id - 1];
-  const overlay = document.getElementById('card-overlay');
-  const title = document.getElementById('card-title');
-  const number = document.getElementById('card-number');
-  const text = document.getElementById('card-text');
+const gameStars = [];
 
-  number.textContent = `Момент ${moment.number}`;
-  title.textContent = moment.title;
-  text.innerHTML = moment.text.map(p => `<p>${p}</p>`).join('');
+function initGameStars() {
+  const layer = document.getElementById('game-layer');
+  const w = window.innerWidth, h = window.innerHeight;
 
-  overlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
+  MOMENTS.forEach((m, idx) => {
+    const el = document.createElement('div');
+    el.className = 'game-star';
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-label', 'Звезда ' + (idx + 1));
+    layer.appendChild(el);
 
-  // Mark as opened
-  if (!openedPoints.has(id)) {
-    openedPoints.add(id);
-    saveOpened();
-    markPointOpened(id);
-    checkAllOpened();
+    // Spread initial positions so they don't cluster
+    const angle   = (idx / MOMENTS.length) * Math.PI * 2 + Math.random() * 0.8;
+    const radius  = (Math.min(w, h) * 0.25) + Math.random() * (Math.min(w, h) * 0.2);
+    const cx = w / 2, cy = h / 2;
+    const x = Math.max(PAD, Math.min(w - PAD, cx + Math.cos(angle) * radius));
+    const y = Math.max(PAD, Math.min(h - PAD, cy + Math.sin(angle) * radius));
+
+    const speed = 0.28 + Math.random() * 0.38;
+    const dir   = Math.random() * Math.PI * 2;
+
+    const star = {
+      id: m.id, el,
+      x, y,
+      vx: Math.cos(dir) * speed,
+      vy: Math.sin(dir) * speed,
+      collected: false,
+      active:    false,
+      assembling: false,
+      geminiX: 0,
+      geminiY: 0,
+    };
+    gameStars.push(star);
+    setStarPos(star);
+
+    el.addEventListener('click',   () => onStarClick(star));
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') onStarClick(star); });
+  });
+}
+
+function setStarPos(star) {
+  star.el.style.transform = `translate(${star.x - HALF}px, ${star.y - HALF}px)`;
+}
+
+// ─── MAIN LOOP ────────────────────────────────────────────────────────────────
+
+function loop() {
+  const w = canvas.width, h = canvas.height;
+
+  // Draw dark space background
+  ctx.fillStyle = '#07080f';
+  ctx.fillRect(0, 0, w, h);
+
+  // Subtle nebula tint
+  const grad = ctx.createRadialGradient(w * 0.62, h * 0.38, 0, w * 0.62, h * 0.38, w * 0.55);
+  grad.addColorStop(0, 'rgba(50, 20, 90, 0.16)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Move + draw background stars
+  const moving = gameState === 'playing' || gameState === 'paused';
+  bgStars.forEach(star => {
+    if (moving) {
+      star.x -= star.speed;                     // drift leftward (flying right)
+      if (star.x < -2) { star.x = w + 2; star.y = Math.random() * h; }
+    }
+    ctx.beginPath();
+    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${star.opacity})`;
+    ctx.fill();
+  });
+
+  // Move game stars
+  if (moving) {
+    gameStars.forEach(star => {
+      if (star.assembling) return;
+      star.x += star.vx;
+      star.y += star.vy;
+      // Bounce off edges
+      if (star.x < PAD || star.x > w - PAD) { star.vx *= -1; star.x = Math.max(PAD, Math.min(w - PAD, star.x)); }
+      if (star.y < PAD || star.y > h - PAD) { star.vy *= -1; star.y = Math.max(PAD, Math.min(h - PAD, star.y)); }
+      setStarPos(star);
+    });
   }
+
+  rafId = requestAnimationFrame(loop);
+}
+
+// ─── ACTIVATION CYCLE ────────────────────────────────────────────────────────
+
+function activateNextStar() {
+  if (gameState !== 'playing') return;
+
+  const available = gameStars.filter(s => !s.collected);
+  if (available.length === 0) { onAllCollected(); return; }
+
+  // Pick one that is not currently active (shouldn't be any, but guard)
+  const star = available[Math.floor(Math.random() * available.length)];
+  star.active = true;
+  star.el.classList.add('active');
+
+  activationTimer = setTimeout(() => {
+    if (star.active && !star.collected) {
+      star.active = false;
+      star.el.classList.remove('active');
+    }
+    // Gap before next activation
+    const gap = 1000 + Math.random() * 1000;
+    setTimeout(activateNextStar, gap);
+  }, 3500 + Math.random() * 1800);
+}
+
+function onStarClick(star) {
+  if (gameState !== 'playing') return;
+  if (!star.active) return;
+
+  clearTimeout(activationTimer);
+  activationTimer = null;
+
+  // Collect this star
+  star.active    = false;
+  star.collected = true;
+  star.el.classList.remove('active');
+  star.el.classList.add('collected');
+
+  updateCounter();
+
+  // Show the next wish in sequence (wishes not tied to specific star)
+  showCard(MOMENTS[wishIndex]);
+  wishIndex++;
+}
+
+// ─── CARD ─────────────────────────────────────────────────────────────────────
+
+function showCard(moment) {
+  gameState = 'paused';
+  document.getElementById('card-number').textContent = `Момент ${moment.number}`;
+  document.getElementById('card-title').textContent  = moment.title;
+  document.getElementById('card-text').innerHTML     = moment.text.map(p => `<p>${p}</p>`).join('');
+  document.getElementById('card-overlay').classList.add('active');
 }
 
 function closeCard() {
-  const overlay = document.getElementById('card-overlay');
-  overlay.classList.remove('active');
-  document.body.style.overflow = '';
+  if (!document.getElementById('card-overlay').classList.contains('active')) return;
+  document.getElementById('card-overlay').classList.remove('active');
+  if (gameState !== 'paused') return;
+
+  const remaining = gameStars.filter(s => !s.collected).length;
+  if (remaining === 0) {
+    onAllCollected();
+  } else {
+    gameState = 'playing';
+    const gap = 900 + Math.random() * 600;
+    setTimeout(activateNextStar, gap);
+  }
 }
 
-function openFinalCard() {
-  const overlay = document.getElementById('final-overlay');
-  // Reset constellation animations so they replay each time
-  const animated = overlay.querySelectorAll('.gem-line, .gem-star');
-  animated.forEach((el) => {
-    el.style.animation = 'none';
-    el.getBoundingClientRect(); // force reflow
-    el.style.animation = '';
+// ─── COUNTER ──────────────────────────────────────────────────────────────────
+
+function updateCounter() {
+  const n = gameStars.filter(s => s.collected).length;
+  document.getElementById('counter-n').textContent = n;
+}
+
+// ─── COLLECT ALL → ASSEMBLE GEMINI ───────────────────────────────────────────
+
+function onAllCollected() {
+  gameState = 'assembling';
+  setTimeout(assembleGemini, 700);
+}
+
+function assembleGemini() {
+  const cx   = window.innerWidth  / 2;
+  const cy   = window.innerHeight / 2;
+  const unit = Math.min(window.innerWidth, window.innerHeight) * 0.13;
+
+  gameStars.forEach((star, i) => {
+    const [ox, oy] = GEMINI_OFFSETS[i];
+    star.geminiX = cx + ox * unit;
+    star.geminiY = cy + oy * unit;
+    star.assembling = true;
+
+    star.el.classList.remove('collected');
+
+    // Staggered CSS transition to target position
+    star.el.style.transition      = `transform 1.4s cubic-bezier(0.4, 0, 0.2, 1) ${i * 0.06}s`;
+    star.el.style.transform       = `translate(${star.geminiX - HALF}px, ${star.geminiY - HALF}px)`;
   });
-  overlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
+
+  // After stars settle, draw lines, then add gem-star class for glow + twinkle
+  setTimeout(() => {
+    gameStars.forEach((star, i) => {
+      star.el.style.transition = '';
+      star.el.classList.add('gem-star');
+      // Desync twinkle per star
+      const dur   = (2.4 + i * 0.35 + (i % 3) * 0.4).toFixed(1);
+      const delay = (i * 0.28).toFixed(1);
+      star.el.style.setProperty('--twinkle-dur',   dur + 's');
+      star.el.style.setProperty('--twinkle-delay', delay + 's');
+    });
+    drawConstellationLines();
+  }, 1600);
+
+  setTimeout(showFinalModal, 3600);
+}
+
+function drawConstellationLines() {
+  const NS  = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById('constellation-svg');
+  svg.setAttribute('viewBox', `0 0 ${window.innerWidth} ${window.innerHeight}`);
+
+  GEMINI_LINES.forEach(([a, b], i) => {
+    const sa = gameStars[a], sb = gameStars[b];
+    const line = document.createElementNS(NS, 'line');
+    line.setAttribute('x1', sa.geminiX); line.setAttribute('y1', sa.geminiY);
+    line.setAttribute('x2', sb.geminiX); line.setAttribute('y2', sb.geminiY);
+    line.setAttribute('class', 'const-line');
+    line.style.animationDelay = `${i * 0.2}s`;
+    svg.appendChild(line);
+  });
+}
+
+// ─── FINAL MODAL ──────────────────────────────────────────────────────────────
+
+function showFinalModal() {
+  gameState = 'done';
+  document.getElementById('final-overlay').classList.add('active');
 }
 
 function closeFinalModal() {
   document.getElementById('final-overlay').classList.remove('active');
-  document.body.style.overflow = '';
-}
-
-function markPointOpened(id) {
-  const g = document.querySelector(`.map-point[data-id="${id}"]`);
-  if (g) g.classList.add('opened');
-}
-
-function checkAllOpened() {
-  updateStatus();
-  if (openedPoints.size >= 8 && !finalUnlocked) {
-    finalUnlocked = true;
-    setTimeout(() => {
-      const fp = document.getElementById('final-point');
-      if (fp) {
-        fp.classList.add('visible');
-        fp.setAttribute('tabindex', '0');
-      }
-      const routeLight = document.getElementById('route-light');
-      if (routeLight) routeLight.classList.add('all-opened');
-      const btn = document.getElementById('open-final-btn');
-      if (btn) btn.classList.add('visible');
-    }, 600);
-  }
-}
-
-function updateStatus() {
-  const el = document.getElementById('map-status');
-  if (!el) return;
-  const count = openedPoints.size;
-  if (count === 0) {
-    el.textContent = 'Нажимайте на точки, чтобы открыть яркие моменты';
-    el.classList.remove('glowing');
-  } else if (count < 8) {
-    el.textContent = `Карта наполняется светом… (${count} из 8)`;
-    el.classList.remove('glowing');
-  } else {
-    el.textContent = 'Маршрут стал светлее.';
-    el.classList.add('glowing');
-  }
-}
-
-function saveOpened() {
-  localStorage.setItem('bm_opened', JSON.stringify([...openedPoints]));
-}
-
-// ─── ADD MOMENT ──────────────────────────────────────────────────────────────
-
-function addUserMoment() {
-  const input = document.getElementById('moment-input');
-  const feedback = document.getElementById('add-moment-feedback');
-  const text = input.value.trim();
-  if (!text) return;
-
-  // Random position on the lighter part of the map
-  const cx = 300 + Math.random() * 380;
-  const cy = 80 + Math.random() * 340;
-  const truncated = text.length > 30 ? text.slice(0, 30) + '…' : text;
-
-  const momentData = { text: truncated, cx: Math.round(cx), cy: Math.round(cy) };
-  userMoments.push(momentData);
-  localStorage.setItem('bm_user_moments', JSON.stringify(userMoments));
-
-  addUserPointToSVG(truncated, momentData.cx, momentData.cy);
-
-  input.value = '';
-  feedback.textContent = 'Момент добавлен на карту ✦';
-  feedback.classList.add('visible');
-  setTimeout(() => feedback.classList.remove('visible'), 3000);
-
-  // Scroll to map
-  document.getElementById('map-section').scrollIntoView({ behavior: 'smooth' });
-}
-
-function addUserPointToSVG(text, cx, cy) {
-  const svg = document.getElementById('route-svg');
-  if (!svg) return;
-  const NS = 'http://www.w3.org/2000/svg';
-
-  const g = document.createElementNS(NS, 'g');
-
-  const outer = document.createElementNS(NS, 'circle');
-  outer.setAttribute('cx', String(cx)); outer.setAttribute('cy', String(cy));
-  outer.setAttribute('r', '9'); outer.setAttribute('class', 'user-point-outer');
-
-  const inner = document.createElementNS(NS, 'circle');
-  inner.setAttribute('cx', String(cx)); inner.setAttribute('cy', String(cy));
-  inner.setAttribute('r', '3'); inner.setAttribute('class', 'user-point-inner');
-
-  const label = document.createElementNS(NS, 'text');
-  label.setAttribute('x', String(cx));
-  label.setAttribute('y', String(cy + 17));
-  label.setAttribute('text-anchor', 'middle');
-  label.setAttribute('class', 'user-point-label');
-  label.textContent = text.length > 20 ? text.slice(0, 20) + '…' : text;
-
-  g.appendChild(outer); g.appendChild(inner); g.appendChild(label);
-  svg.appendChild(g);
-}
-
-// ─── SCROLL ANIMATION ────────────────────────────────────────────────────────
-
-function initScrollObserver() {
-  const els = document.querySelectorAll('.observe-fade');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('in-view');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15 });
-  els.forEach((el) => observer.observe(el));
-}
-
-// ─── HERO LINES SVG ──────────────────────────────────────────────────────────
-
-function buildHeroLines() {
-  const svg = document.getElementById('hero-lines-svg');
-  if (!svg) return;
-  const NS = 'http://www.w3.org/2000/svg';
-  const paths = [
-    'M -50,400 Q 200,200 500,350 T 1050,300',
-    'M -50,500 Q 300,300 600,450 T 1050,400',
-    'M 100,600 Q 400,350 750,500 T 1100,450',
-    'M 0,200 Q 350,100 650,250 T 1100,200',
-  ];
-  paths.forEach((d, i) => {
-    const path = document.createElementNS(NS, 'path');
-    path.setAttribute('d', d);
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', i % 2 === 0 ? '#6050a0' : '#c8a84b');
-    path.setAttribute('stroke-width', '0.8');
-    path.setAttribute('opacity', String(0.12 + i * 0.04));
-    svg.appendChild(path);
-  });
+  setTimeout(() => location.reload(), 600);
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-  buildHeroLines();
-  buildSVG();
-  initScrollObserver();
+  initCanvas();
+  initGameStars();
 
-  // On load, restore open state
-  if (finalUnlocked) {
-    setTimeout(() => {
-      const routeLight = document.getElementById('route-light');
-      if (routeLight) routeLight.classList.add('all-opened');
-      const btn = document.getElementById('open-final-btn');
-      if (btn) btn.classList.add('visible');
-    }, 300);
-  }
+  // Start the render loop immediately (stars visible behind intro)
+  loop();
+
+  // Hide game layer until game starts
+  document.getElementById('game-layer').style.opacity = '0';
+  document.getElementById('game-layer').style.transition = 'opacity 1s ease';
+
+  document.getElementById('start-btn').addEventListener('click', () => {
+    document.getElementById('intro').classList.add('hidden');
+    document.getElementById('game-layer').style.opacity = '1';
+    document.getElementById('counter').classList.add('visible');
+    gameState = 'playing';
+    setTimeout(activateNextStar, 1600);
+  });
 
   // Card close
   document.getElementById('card-backdrop').addEventListener('click', closeCard);
   document.getElementById('card-close-btn').addEventListener('click', closeCard);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeCard();
-      closeFinalModal();
-    }
-  });
 
-  // Final modal close
+  // Final modal close (backdrop click or button)
   document.getElementById('final-backdrop').addEventListener('click', closeFinalModal);
   document.getElementById('final-close-btn').addEventListener('click', closeFinalModal);
 
-  // Open final button
-  document.getElementById('open-final-btn-action').addEventListener('click', openFinalCard);
-
-  // Scroll to map
-  document.getElementById('open-map-btn').addEventListener('click', () => {
-    document.getElementById('map-section').scrollIntoView({ behavior: 'smooth' });
-  });
-
-  // Add moment
-  document.getElementById('add-moment-btn').addEventListener('click', addUserMoment);
-  document.getElementById('moment-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      addUserMoment();
-    }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeCard(); closeFinalModal(); }
   });
 });
