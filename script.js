@@ -129,46 +129,65 @@ function buildSVG() {
 
   const NS = 'http://www.w3.org/2000/svg';
 
-  // Gradient defs
+  // Defs
   const defs = document.createElementNS(NS, 'defs');
   defs.innerHTML = `
-    <linearGradient id="bgGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#3a2e26" stop-opacity="0.06"/>
-      <stop offset="60%" stop-color="#e8ddd0" stop-opacity="0.03"/>
-      <stop offset="100%" stop-color="#d4ae72" stop-opacity="0.04"/>
-    </linearGradient>
+    <radialGradient id="bgGrad" cx="60%" cy="30%" r="70%">
+      <stop offset="0%"   stop-color="#1a1040" stop-opacity="0.5"/>
+      <stop offset="60%"  stop-color="#07080f" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#050608" stop-opacity="1"/>
+    </radialGradient>
     <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
       <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
-    <filter id="glowStrong" x="-30%" y="-30%" width="160%" height="160%">
+    <filter id="glowStrong" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowRose" x="-40%" y="-40%" width="180%" height="180%">
       <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
       <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   `;
   svg.appendChild(defs);
 
-  // Background fill
+  // Background
   const bgRect = document.createElementNS(NS, 'rect');
   bgRect.setAttribute('width', '800');
   bgRect.setAttribute('height', '700');
   bgRect.setAttribute('fill', 'url(#bgGrad)');
   svg.appendChild(bgRect);
 
-  // Subtle grid lines (map texture)
+  // Star field
+  const starsG = document.createElementNS(NS, 'g');
+  starsG.setAttribute('aria-hidden', 'true');
+  const rng = (() => { let s = 42; return () => { s = (s * 1664525 + 1013904223) & 0x7fffffff; return s / 0x7fffffff; }; })();
+  for (let i = 0; i < 140; i++) {
+    const star = document.createElementNS(NS, 'circle');
+    star.setAttribute('cx', String(rng() * 800));
+    star.setAttribute('cy', String(rng() * 700));
+    star.setAttribute('r', String(0.3 + rng() * 1.1));
+    star.setAttribute('fill', 'white');
+    star.setAttribute('opacity', String((0.08 + rng() * 0.45).toFixed(2)));
+    starsG.appendChild(star);
+  }
+  svg.appendChild(starsG);
+
+  // Subtle grid (navigation reference lines)
   const gridG = document.createElementNS(NS, 'g');
-  gridG.setAttribute('class', 'map-grid');
-  gridG.setAttribute('opacity', '0.12');
+  gridG.setAttribute('aria-hidden', 'true');
+  gridG.setAttribute('opacity', '0.07');
   for (let i = 0; i < 10; i++) {
     const h = document.createElementNS(NS, 'line');
     h.setAttribute('x1', '0'); h.setAttribute('y1', String(70 * i));
     h.setAttribute('x2', '800'); h.setAttribute('y2', String(70 * i));
-    h.setAttribute('stroke', '#9e8d7a'); h.setAttribute('stroke-width', '0.5');
+    h.setAttribute('stroke', '#a090d0'); h.setAttribute('stroke-width', '0.5');
     gridG.appendChild(h);
     const v = document.createElementNS(NS, 'line');
     v.setAttribute('x1', String(80 * i)); v.setAttribute('y1', '0');
     v.setAttribute('x2', String(80 * i)); v.setAttribute('y2', '700');
-    v.setAttribute('stroke', '#9e8d7a'); v.setAttribute('stroke-width', '0.5');
+    v.setAttribute('stroke', '#a090d0'); v.setAttribute('stroke-width', '0.5');
     gridG.appendChild(v);
   }
   svg.appendChild(gridG);
@@ -247,7 +266,7 @@ function buildSVG() {
   const fi = document.createElementNS(NS, 'circle');
   fi.setAttribute('cx', String(FINAL_COORDS.cx)); fi.setAttribute('cy', String(FINAL_COORDS.cy));
   fi.setAttribute('r', '6'); fi.setAttribute('class', 'final-point-inner');
-  fi.setAttribute('filter', 'url(#glowStrong)');
+  fi.setAttribute('filter', 'url(#glowRose)');
 
   const fl = document.createElementNS(NS, 'text');
   fl.setAttribute('x', String(FINAL_COORDS.cx));
@@ -439,9 +458,9 @@ function buildHeroLines() {
     const path = document.createElementNS(NS, 'path');
     path.setAttribute('d', d);
     path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', '#b8975a');
+    path.setAttribute('stroke', i % 2 === 0 ? '#6050a0' : '#c8a84b');
     path.setAttribute('stroke-width', '0.8');
-    path.setAttribute('opacity', String(0.15 + i * 0.05));
+    path.setAttribute('opacity', String(0.12 + i * 0.04));
     svg.appendChild(path);
   });
 }
