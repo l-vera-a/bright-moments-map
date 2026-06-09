@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Карта ярких моментов</title>
+  <meta name="description" content="Интерактивный подарок — поэтическая карта жизненного пути." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════
+       HERO
+  ═══════════════════════════════════════════════ -->
+  <section id="hero">
+    <div class="hero-bg"></div>
+    <svg id="hero-lines-svg" class="hero-lines" viewBox="0 0 1050 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+
+    <div class="hero-content">
+      <p class="hero-eyebrow">Личный маршрут</p>
+
+      <h1 class="hero-title">
+        Карта<br>
+        <em>ярких</em><br>
+        моментов
+      </h1>
+
+      <p class="hero-subtitle">
+        <span class="name-highlight">Юля</span>, у каждого человека есть свой маршрут.<br>
+        Не всегда прямой. Не всегда простой.<br>
+        Но именно яркие моменты делают его настоящим.
+      </p>
+
+      <button id="open-map-btn" class="btn-primary">
+        <span>Открыть карту</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <line x1="8" y1="2" x2="8" y2="14" stroke="currentColor" stroke-width="1"/>
+          <polyline points="4,10 8,14 12,10" stroke="currentColor" stroke-width="1" fill="none"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="hero-scroll-hint" aria-hidden="true">
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       MEANING
+  ═══════════════════════════════════════════════ -->
+  <section id="meaning">
+    <div class="meaning-inner">
+      <div class="observe-fade">
+        <p class="section-label">Про этот подарок</p>
+        <div class="meaning-text-block">
+          <p>Этот подарок — не только про аромат.</p>
+          <p>Он про движение, свободу и путь. Про человека, который идёт по своей жизни — иногда через тёмное, иногда через светлое, но всегда <em>дальше</em>.</p>
+          <p>Аромат становится маленьким символом: у каждого пути есть свой шлейф, своя память и свои точки света.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       MAP
+  ═══════════════════════════════════════════════ -->
+  <section id="map-section">
+    <div class="map-header observe-fade">
+      <p class="section-label">Интерактивная карта</p>
+      <h2 class="map-title">Маршрут</h2>
+      <p id="map-status" class="map-status">Нажимайте на точки, чтобы открыть яркие моменты</p>
+    </div>
+
+    <div class="map-container observe-fade">
+      <svg
+        id="route-svg"
+        viewBox="0 0 800 700"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-label="Интерактивная карта ярких моментов"
+        role="img"
+      ></svg>
+    </div>
+
+    <div id="open-final-btn" class="open-final-btn">
+      <button id="open-final-btn-action" class="btn-final">
+        <span>Открыть финальное пожелание</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       ADD MOMENT
+  ═══════════════════════════════════════════════ -->
+  <section id="add-moment">
+    <div class="add-moment-inner observe-fade">
+      <p class="section-label">Твой маршрут</p>
+      <h2 class="add-moment-title">Добавить свой яркий момент</h2>
+      <p class="add-moment-desc">Какой момент ты хочешь забрать с собой дальше?</p>
+
+      <div class="moment-form">
+        <textarea
+          id="moment-input"
+          class="moment-input"
+          placeholder="Напиши о своём моменте…"
+          maxlength="200"
+          rows="3"
+          aria-label="Твой яркий момент"
+        ></textarea>
+        <button id="add-moment-btn" class="btn-add-moment">
+          <span>Добавить на карту</span>
+        </button>
+        <p id="add-moment-feedback" class="add-moment-feedback" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════ -->
+  <footer>
+    <p class="footer-text">Каждый маршрут уникален. Твой — особенно.</p>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════
+       CARD OVERLAY
+  ═══════════════════════════════════════════════ -->
+  <div id="card-overlay" class="card-overlay" role="dialog" aria-modal="true" aria-labelledby="card-title">
+    <div id="card-backdrop" class="card-backdrop"></div>
+    <div class="card-body">
+      <button id="card-close-btn" class="card-close" aria-label="Закрыть">&#x2715;</button>
+      <p id="card-number" class="card-number"></p>
+      <h3 id="card-title" class="card-title"></h3>
+      <div class="card-divider"></div>
+      <div id="card-text" class="card-text"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       FINAL MODAL
+  ═══════════════════════════════════════════════ -->
+  <div id="final-overlay" class="final-overlay" role="dialog" aria-modal="true" aria-labelledby="final-greeting">
+    <div id="final-backdrop" class="final-backdrop"></div>
+    <div class="final-body">
+      <div class="final-star" aria-hidden="true">✦ ✦ ✦</div>
+
+      <h2 id="final-greeting" class="final-greeting">
+        С Днём рождения,<br><em>Юля</em>
+      </h2>
+
+      <div class="final-divider"></div>
+
+      <div class="final-text">
+        <p>Пусть твой путь будет разным — живым, настоящим, твоим. Пусть тёмные полосы остаются только участками, а не направлением.</p>
+        <p>Пусть светлые дороги встречаются чаще. А яркие моменты — такие, которые потом вспоминаются не датой, а ощущением — пусть становятся главными отметками на твоей карте.</p>
+        <p>И пусть у каждого нового маршрута будет свой аромат: свободы, тепла, смелости, красоты и счастья, которое невозможно объяснить, но легко узнать.</p>
+      </div>
+
+      <div class="final-divider"></div>
+
+      <p class="final-signature">С любовью ✦</p>
+
+      <button id="final-close-btn" class="btn-close-final">Вернуться к карте</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
