@@ -86,9 +86,10 @@ const GEMINI_LINES = [
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
-const HALF = 16;       // half of star div (32px hitbox)
-const PAD  = 72;       // minimum distance from edges for star movement
-const BG_COUNT = 210;  // number of background canvas stars
+const HALF     = 16;   // half of star div (32px hitbox)
+const PAD      = 72;   // minimum distance from edges for star movement
+const BG_COUNT = 260;  // background canvas stars
+const MAX_Z    = 1400; // depth of star field
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 
@@ -109,25 +110,21 @@ function initCanvas() {
   function resize() {
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
+    // Solid fill on resize so there's no white flash
+    ctx.fillStyle = '#07080f';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
   resize();
   window.addEventListener('resize', resize);
 
-  // Seeded pseudo-random (consistent star layout per session)
-  let s = 0xdeadbeef;
-  function rnd() {
-    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
-    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
-    return ((s ^ (s >>> 16)) >>> 0) / 0xffffffff;
-  }
-
+  // 3D stars: x/y are world-space offsets from centre, z is depth
   for (let i = 0; i < BG_COUNT; i++) {
     bgStars.push({
-      x:       rnd() * window.innerWidth,
-      y:       rnd() * window.innerHeight,
-      r:       0.3  + rnd() * 1.1,
-      opacity: 0.07 + rnd() * 0.52,
-      speed:   0.01 + rnd() * 0.055,
+      x:   (Math.random() - 0.5) * MAX_Z * 2.6,
+      y:   (Math.random() - 0.5) * MAX_Z * 2.6,
+      z:   Math.random() * MAX_Z,
+      spd: 1.4 + Math.random() * 5.2,   // close stars faster, far stars slower
+      bri: 0.5 + Math.random() * 0.5,   // brightness variation
     });
   }
 }
@@ -184,39 +181,60 @@ function setStarPos(star) {
 // ─── MAIN LOOP ────────────────────────────────────────────────────────────────
 
 function loop() {
-  const w = canvas.width, h = canvas.height;
+  const w  = canvas.width,  h  = canvas.height;
+  const cx = w / 2,         cy = h / 2;
+  // Focal length controls the field of view (larger = tighter tunnel)
+  const fl = Math.min(w, h) * 0.44;
 
-  // Draw dark space background
-  ctx.fillStyle = '#07080f';
-  ctx.fillRect(0, 0, w, h);
-
-  // Subtle nebula tint
-  const grad = ctx.createRadialGradient(w * 0.62, h * 0.38, 0, w * 0.62, h * 0.38, w * 0.55);
-  grad.addColorStop(0, 'rgba(50, 20, 90, 0.16)');
-  grad.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, w, h);
-
-  // Move + draw background stars
   const moving = gameState === 'playing' || gameState === 'paused';
+
+  // ── Fade instead of clear ─────────────────────────────────────────────────
+  // Each frame we paint a semi-transparent dark rect over the previous frame.
+  // This creates natural trailing streaks: fast/close stars leave longer trails.
+  ctx.fillStyle = 'rgba(7, 8, 15, 0.16)';
+  ctx.fillRect(0, 0, w, h);
+
+  // Subtle nebula — drawn at low opacity each frame, reaches a steady state
+  const ng = ctx.createRadialGradient(cx * 1.15, cy * 0.68, 0, cx * 1.15, cy * 0.68, w * 0.52);
+  ng.addColorStop(0, 'rgba(42, 12, 75, 0.055)');
+  ng.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = ng;
+  ctx.fillRect(0, 0, w, h);
+
+  // ── 3D perspective star field ─────────────────────────────────────────────
   bgStars.forEach(star => {
     if (moving) {
-      star.x -= star.speed;                     // drift leftward (flying right)
-      if (star.x < -2) { star.x = w + 2; star.y = Math.random() * h; }
+      star.z -= star.spd;
+      if (star.z < 1) {
+        // Star passed the camera — respawn at the back, random world-space angle
+        star.z = MAX_Z;
+        star.x = (Math.random() - 0.5) * MAX_Z * 2.6;
+        star.y = (Math.random() - 0.5) * MAX_Z * 2.6;
+      }
     }
+
+    // Project 3D → 2D screen: stars at centre-screen when far, spread toward edges when close
+    const sx = (star.x / star.z) * fl + cx;
+    const sy = (star.y / star.z) * fl + cy;
+    if (sx < -20 || sx > w + 20 || sy < -20 || sy > h + 20) return;
+
+    // Size and brightness grow quadratically as star approaches (z → 0)
+    const t  = 1 - star.z / MAX_Z;            // 0 = far, 1 = very near
+    const r  = Math.max(0.3, t * t * 3.8);
+    const op = Math.min(1, t * 2.4) * star.bri;
+
     ctx.beginPath();
-    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${star.opacity})`;
+    ctx.arc(sx, sy, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${op.toFixed(2)})`;
     ctx.fill();
   });
 
-  // Move game stars
+  // ── Move game stars ───────────────────────────────────────────────────────
   if (moving) {
     gameStars.forEach(star => {
       if (star.assembling) return;
       star.x += star.vx;
       star.y += star.vy;
-      // Bounce off edges
       if (star.x < PAD || star.x > w - PAD) { star.vx *= -1; star.x = Math.max(PAD, Math.min(w - PAD, star.x)); }
       if (star.y < PAD || star.y > h - PAD) { star.vy *= -1; star.y = Math.max(PAD, Math.min(h - PAD, star.y)); }
       setStarPos(star);
