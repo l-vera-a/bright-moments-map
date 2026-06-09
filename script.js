@@ -321,7 +321,15 @@ function closeCard() {
 }
 
 function openFinalCard() {
-  document.getElementById('final-overlay').classList.add('active');
+  const overlay = document.getElementById('final-overlay');
+  // Reset constellation animations so they replay each time
+  const animated = overlay.querySelectorAll('.gem-line, .gem-star');
+  animated.forEach((el) => {
+    el.style.animation = 'none';
+    el.getBoundingClientRect(); // force reflow
+    el.style.animation = '';
+  });
+  overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
 

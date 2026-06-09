@@ -143,25 +143,64 @@
   <div id="final-overlay" class="final-overlay" role="dialog" aria-modal="true" aria-labelledby="final-greeting">
     <div id="final-backdrop" class="final-backdrop"></div>
     <div class="final-body">
-      <div class="final-star" aria-hidden="true">✦ ✦ ✦</div>
 
-      <h2 id="final-greeting" class="final-greeting">
-        С Днём рождения,<br><em>Юля</em>
-      </h2>
-
-      <div class="final-divider"></div>
-
-      <div class="final-text">
-        <p>Пусть твой путь будет разным — живым, настоящим, твоим. Пусть тёмные полосы остаются только участками, а не направлением.</p>
-        <p>Пусть светлые дороги встречаются чаще. А яркие моменты — такие, которые потом вспоминаются не датой, а ощущением — пусть становятся главными отметками на твоей карте.</p>
-        <p>И пусть у каждого нового маршрута будет свой аромат: свободы, тепла, смелости, красоты и счастья, которое невозможно объяснить, но легко узнать.</p>
+      <!-- Gemini constellation -->
+      <div class="gemini-wrap" aria-hidden="true">
+        <svg id="gemini-svg" class="gemini-svg" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- Lines drawn via CSS animation -->
+          <g class="gem-lines">
+            <!-- Left twin body -->
+            <line class="gem-line" x1="32" y1="14" x2="28" y2="32" style="--i:0"/>
+            <line class="gem-line" x1="28" y1="32" x2="22" y2="52" style="--i:1"/>
+            <line class="gem-line" x1="22" y1="52" x2="18" y2="72" style="--i:2"/>
+            <line class="gem-line" x1="18" y1="72" x2="14" y2="88" style="--i:3"/>
+            <!-- Right twin body -->
+            <line class="gem-line" x1="88" y1="14" x2="92" y2="32" style="--i:0"/>
+            <line class="gem-line" x1="92" y1="32" x2="98" y2="52" style="--i:1"/>
+            <line class="gem-line" x1="98" y1="52" x2="102" y2="72" style="--i:2"/>
+            <line class="gem-line" x1="102" y1="72" x2="106" y2="88" style="--i:3"/>
+            <!-- Crossbars connecting twins -->
+            <line class="gem-line gem-cross" x1="28" y1="32" x2="92" y2="32" style="--i:4"/>
+            <line class="gem-line gem-cross" x1="22" y1="52" x2="98" y2="52" style="--i:5"/>
+          </g>
+          <!-- Stars -->
+          <g class="gem-stars">
+            <!-- Left twin: Pollux side -->
+            <circle class="gem-star gem-star--bright" cx="32" cy="14" r="2.5" style="--i:0"/> <!-- Pollux -->
+            <circle class="gem-star" cx="28" cy="32" r="1.5" style="--i:1"/>
+            <circle class="gem-star" cx="22" cy="52" r="1.5" style="--i:2"/>
+            <circle class="gem-star" cx="18" cy="72" r="1.2" style="--i:3"/>
+            <circle class="gem-star" cx="14" cy="88" r="1.2" style="--i:4"/>
+            <!-- Right twin: Castor side -->
+            <circle class="gem-star gem-star--bright" cx="88" cy="14" r="2.2" style="--i:0"/> <!-- Castor -->
+            <circle class="gem-star" cx="92" cy="32" r="1.5" style="--i:1"/>
+            <circle class="gem-star" cx="98" cy="52" r="1.5" style="--i:2"/>
+            <circle class="gem-star" cx="102" cy="72" r="1.2" style="--i:3"/>
+            <circle class="gem-star" cx="106" cy="88" r="1.2" style="--i:4"/>
+          </g>
+        </svg>
+        <p class="gemini-label">♊ Близнецы</p>
       </div>
 
-      <div class="final-divider"></div>
+      <div class="final-content">
+        <h2 id="final-greeting" class="final-greeting">
+          С Днём рождения,<br><em>Юля</em>
+        </h2>
 
-      <p class="final-signature">С любовью ✦</p>
+        <div class="final-divider"></div>
 
-      <button id="final-close-btn" class="btn-close-final">Вернуться к карте</button>
+        <div class="final-text">
+          <p>Близнецы — знак двух начал, которые умеют жить внутри одного человека, не противоречя друг другу. Любопытство и глубина. Движение и присутствие. Лёгкость — и всё, что за ней стоит.</p>
+          <p>Пусть твой путь будет таким же — живым с двух сторон. Пусть тёмные участки остаются только участками, а светлые дороги встречаются чаще, чем ожидаешь.</p>
+          <p>А яркие моменты — такие, которые вспоминаются не датой, а ощущением — пусть становятся главными звёздами на твоей карте.</p>
+        </div>
+
+        <div class="final-divider"></div>
+
+        <p class="final-signature">С любовью ✦</p>
+
+        <button id="final-close-btn" class="btn-close-final">Вернуться к карте</button>
+      </div>
     </div>
   </div>
 
